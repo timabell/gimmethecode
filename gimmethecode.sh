@@ -56,32 +56,46 @@ repoqty=`echo "$repos" | wc -l`
 for repo in $repos ; do
 	echo $repo
 done
-echo "$repoqty repos found:"
+echo "$repoqty repos found. cloning / updating..."
+echo
 
+#create/goto output folder
 if [ ! -d "$TARGET" ]
 then
 	echo "creating output folder $TARGET"
 	mkdir -p $TARGET
 fi
 cd $TARGET
-echo 'cloning repos and submodules...'
-#for each repo
+
+#process each repo
 for repo in $repos ; do
-	echo "cloning $repo"
 	repopath=${repo##/var/git/}  #remove /var/git from front of $repo
-	echo "repopath $repopath"
+	reponame="$repopath" #repo.git foldername, used to keep git extension
 	subfolder=${repopath%/*}  #remove git folder name to get local folder path
 	if [ "$repopath" == "$subfolder" ] #nothing found
 	then
 		subfolder=""
+	else
+		reponame=${repopath##*/}
 	fi
-	echo "subfolder $subfolder"
-	#$GIT clone $GITSER:$repo 
 	if [[ "$subfolder" != "" && ! -d "$TARGET/$subfolder" ]]
 	then
 		echo "creating output folder $TARGET/$subfolder"
 		mkdir -p "$TARGET/$subfolder"
 	fi
+	#use subshell to ensure return to current path
+	(
+		cd "$TARGET/$subfolder"
+		if [ -d "$reponame" ] #already exists, run fetch instead
+		then
+			echo "fetching for exising clone $repopath"
+			cd "$reponame"
+			$GIT fetch
+		else
+			echo "cloning $repopath"
+			$GIT clone $GITSERV:$repo $reponame
+		fi
+	)
 done
 
 #clone
