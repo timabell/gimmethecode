@@ -71,9 +71,17 @@ for repo in $repos ; do
 	repopath=${repo##/var/git/}  #remove /var/git from front of $repo
 	echo "repopath $repopath"
 	subfolder=${repopath%/*}  #remove git folder name to get local folder path
+	if [ "$repopath" == "$subfolder" ] #nothing found
+	then
+		subfolder=""
+	fi
 	echo "subfolder $subfolder"
-	
 	#$GIT clone $GITSER:$repo 
+	if [[ "$subfolder" != "" && ! -d "$TARGET/$subfolder" ]]
+	then
+		echo "creating output folder $TARGET/$subfolder"
+		mkdir -p "$TARGET/$subfolder"
+	fi
 done
 
 #clone
