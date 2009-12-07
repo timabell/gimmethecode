@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 #		 gimmethecode.sh, A quick script for grabbing a range of git repos from a server.
 #    Copyright (C) 2009 Tim Abell <code@timwise.co.uk>
@@ -24,15 +24,29 @@
 #but hey, who cares? you can just leave this running and delete
 #what you don't want.
 
-GITSERV=$1
-GIT="/usr/bin/git"
-TARGET="the-code"
+usage()
+{
+	echo "usage:"
+	echo "$0 git-server output-folder"
+}
 
-if [ -d ./$TARGET ]; then
-	echo "target folder $TARGET already exists"
+GITSERV=$1
+TARGET=$2
+GIT="/usr/bin/git"
+
+if [ "$TARGET" == "" ]
+then
+	echo "target folder missing"
+	usage
 	exit 1
 fi
 
+if [ "$GITSERV" == "" ]
+then
+	echo "server argument missing"
+	usage
+	exit 1
+fi
 
 #get list of git repos from server
 echo "getting repo list from server \"$GITSERV\" via ssh..."
@@ -44,8 +58,11 @@ for repo in $repos ; do
 done
 echo "$repoqty repos found:"
 
-echo "creating output folder $TARGET"
-mkdir $TARGET
+if [ ! -d "$TARGET" ]
+then
+	echo "creating output folder $TARGET"
+	mkdir -p $TARGET
+fi
 cd $TARGET
 echo 'cloning repos and submodules...'
 #for each repo
