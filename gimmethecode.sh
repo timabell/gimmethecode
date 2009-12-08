@@ -30,6 +30,23 @@ usage()
 	echo "$0 git-server output-folder"
 }
 
+function updateSubmodules()
+{
+	echo "updating/initializing submodules of `pwd`"
+	#recurse submodules and update/init
+	$GIT submodule update --init
+	#uses get submodule name from submodule list output
+	for submodule in `$GIT submodule | awk '{print $2;}'` 
+	do
+		( # subshell to keep current path
+			cd "$submodule"
+			updateSubmodules
+		)
+	done
+}
+
+##########
+
 GITSERV=$1
 TARGET=$2
 GIT="/usr/bin/git"
@@ -91,15 +108,18 @@ for repo in $repos ; do
 			echo "fetching for exising clone $repopath"
 			cd "$reponame"
 			$GIT fetch
+			cd ..
 		else
 			echo "cloning $repopath"
 			$GIT clone $GITSERV:$repo $reponame
 		fi
+		#init/update submodules
+		cd "$reponame"
+		#--recursive becomes available in git 1.6.5. do it manually for now
+		#$GIT submodule --recursive update --init
+		updateSubmodules
 	)
 done
+echo "finished."
 
-#clone
 
-#look for submodules
-#for each submodule
-#initialize and update
