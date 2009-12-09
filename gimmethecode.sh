@@ -32,17 +32,21 @@ usage()
 
 function updateSubmodules()
 {
-	echo "updating/initializing submodules of `pwd`"
 	#recurse submodules and update/init
-	$GIT submodule update --init
-	#uses get submodule name from submodule list output
-	for submodule in `$GIT submodule | awk '{print $2;}'` 
-	do
-		( # subshell to keep current path
-			cd "$submodule"
-			updateSubmodules
-		)
-	done
+	modulelist=`$GIT submodule | awk '{print $2;}'`
+	if [ "$modulelist" != "" ]
+	then
+		echo "updating/initializing submodules of `pwd`"
+		$GIT submodule update --init
+		#uses get submodule name from submodule list output
+		for submodule in $modulelist 
+		do
+			( # subshell to keep current path
+				cd "$submodule"
+				updateSubmodules
+			)
+		done
+	fi
 }
 
 ##########
