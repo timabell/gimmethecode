@@ -71,7 +71,7 @@ fi
 
 #get list of git repos from server
 echo "getting repo list from server \"$GITSERV\" via ssh..."
-repos=`/usr/bin/ssh $GITSERV 'find /var/git/ -type d -iname "*.git"'`
+repos=`/usr/bin/ssh $GITSERV 'find /var/git/ -type d -iname "*.git"' | sort`
 #count repos
 repoqty=`echo "$repos" | wc -l`
 for repo in $repos ; do
